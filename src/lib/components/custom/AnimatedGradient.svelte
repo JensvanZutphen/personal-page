@@ -259,4 +259,36 @@
 			transform: scale(1.3);
 		}
 	}
+
+	:global(.dark) .shape-1,
+	:global(.dark) .shape-2 {
+		opacity: 0.12;
+	}
+	:global(.dark) .shape-3 {
+		opacity: 0.1;
+	}
+	:global(.dark) .shape-4,
+	:global(.dark) .shape-5 {
+		opacity: 0.09;
+	}
+
+	:global(.dark) .grid-pattern {
+		opacity: calc(0.5 + (var(--mouse-x, 50) / 100) * 0.01);
+	}
+
+	:global(.dark) .bg-gradient-radial {
+		animation-name: pulse-glow-dark;
+	}
+
+	@keyframes pulse-glow-dark {
+		0%,
+		100% {
+			opacity: 0.1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.15;
+			transform: scale(1.3);
+		}
+	}
 </style>

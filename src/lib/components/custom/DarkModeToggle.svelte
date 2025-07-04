@@ -1,7 +1,7 @@
 <script lang="ts">
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
-	import { toggleMode, mode } from 'mode-watcher';
+	import { ModeWatcher, toggleMode, mode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button/index.js';
 
 	async function handleClick(event: MouseEvent) {
@@ -18,17 +18,21 @@
 		);
 
 		await document.startViewTransition(() => {
+			document.documentElement.classList.add('is-toggling-theme');
 			document.documentElement.style.setProperty('--clip-x', `${x}px`);
 			document.documentElement.style.setProperty('--clip-y', `${y}px`);
 			document.documentElement.style.setProperty('--clip-radius', `${endRadius}px`);
 			toggleMode();
 		}).finished;
 
+		document.documentElement.classList.remove('is-toggling-theme');
 		document.documentElement.style.removeProperty('--clip-x');
 		document.documentElement.style.removeProperty('--clip-y');
 		document.documentElement.style.removeProperty('--clip-radius');
 	}
 </script>
+
+<ModeWatcher />
 
 <Button
 	onclick={handleClick}
@@ -57,11 +61,11 @@
 		--clip-radius: 0px;
 	}
 
-	::view-transition-old(root) {
+	:global(html.is-toggling-theme)::view-transition-old(root) {
 		animation: none;
 	}
 
-	::view-transition-new(root) {
+	:global(html.is-toggling-theme)::view-transition-new(root) {
 		animation: reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 		clip-path: circle(var(--clip-radius) at var(--clip-x) var(--clip-y));
 	}

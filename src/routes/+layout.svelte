@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../app.css';
 	import { fade } from 'svelte/transition';
 	import { quartOut } from 'svelte/easing';
 
