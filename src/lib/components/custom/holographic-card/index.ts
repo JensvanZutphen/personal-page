@@ -1,0 +1,1 @@
+export { default as HolographicCard } from './HolographicCard.svelte'; 

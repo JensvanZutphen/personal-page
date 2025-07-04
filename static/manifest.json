@@ -1,0 +1,31 @@
+{
+  "short_name": "sveltekit-app",
+  "name": "Sveltekit App",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icon-192x192.jpeg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512x512.jpeg",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ],
+  "background_color": "#FF9900",
+  "display": "fullscreen",
+  "scope": "/",
+  "theme_color": "#FF9900",
+  "shortcuts": [
+    {
+      "name": "Sveltekit App",
+      "short_name": "Sveltekit App",
+      "description": "Sveltekit App",
+      "url": "/",
+      "icons": [{ "src": "/icon-192x192.jpeg", "sizes": "192x192" }]
+    }
+  ],
+  "description": "Sveltekit App",
+}

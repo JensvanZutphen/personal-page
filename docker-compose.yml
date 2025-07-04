@@ -1,0 +1,44 @@
+services:
+  app:
+    image: sveltekit-app:latest
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3030
+      - NODE_TLS_REJECT_UNAUTHORIZED="0"
+      - DATABASE_URL=${DATABASE_URL}
+    env_file:
+      - stack.env
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - crm-network
+
+  db:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: local
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+      start_period: 30s
+    networks:
+      - crm-network
+
+volumes:
+  mysqldata:
+
+networks:
+  crm-network:
