@@ -258,9 +258,9 @@
 				<p class="text-muted-foreground mx-auto mb-8 max-w-2xl text-lg">
 					Have a project in mind or just want to say hi? My inbox is always open.
 				</p>
-				<a href="mailto:jensvanzutphen4@gmail.com">
+				<a href="mailto:jensvanzutphen@protonmail.com">
 					<Button size="lg">
-						jensvanzutphen4@gmail.com
+						Mail me!
 						<MailIcon class="ml-2 size-5" />
 					</Button>
 				</a>

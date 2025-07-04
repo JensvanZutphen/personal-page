@@ -1,21 +1,116 @@
 <script lang="ts">
-	import { fade } from "svelte/transition";
-	import { quintOut } from "svelte/easing";
+	import { fade } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
-	let { mouseX = 50, mouseY = 50 } = $props<{ mouseX?: number; mouseY?: number }>();
+	type Particle = {
+		id: string;
+		x: number;
+		y: number;
+		vx: number;
+		vy: number;
+		size: number;
+		opacity: number;
+	};
+
+	let { mouseX = -1, mouseY = -1 } = $props<{ mouseX?: number; mouseY?: number }>();
 	let mounted = $state(false);
+	let wrapper: HTMLElement;
+	let particles: Particle[] = $state([]);
+
+	const numParticles = 20;
+	const repulsionRadius = 60;
+	const maxRepulsionForce = 1.5;
+	const baseSpeed = 0.3;
+	const friction = 0.97;
 
 	$effect(() => {
 		mounted = true;
 	});
+
+	$effect(() => {
+		if (!mounted || !wrapper) return;
+
+		particles = Array.from({ length: numParticles }, (_, i) => ({
+			id: `p-${i}`,
+			x: Math.random() * wrapper.clientWidth,
+			y: Math.random() * wrapper.clientHeight,
+			vx: (Math.random() - 0.5) * baseSpeed * 2,
+			vy: (Math.random() - 0.5) * baseSpeed * 2,
+			size: Math.random() * 2.5 + 1,
+			opacity: 0
+		}));
+
+		let animationFrameId: number;
+
+		const animate = () => {
+			const width = wrapper.clientWidth;
+			const height = wrapper.clientHeight;
+			const mousePx = {
+				x: (mouseX / 100) * width,
+				y: (mouseY / 100) * height
+			};
+
+			for (const p of particles) {
+				// Mouse repulsion
+				if (mouseX > -1) {
+					const dx = p.x - mousePx.x;
+					const dy = p.y - mousePx.y;
+					const distance = Math.sqrt(dx * dx + dy * dy);
+
+					if (distance < repulsionRadius) {
+						const force = ((repulsionRadius - distance) / repulsionRadius) * maxRepulsionForce;
+						const angle = Math.atan2(dy, dx);
+						p.vx += Math.cos(angle) * force;
+						p.vy += Math.sin(angle) * force;
+					}
+				}
+
+				// Apply friction and update position
+				p.vx *= friction;
+				p.vy *= friction;
+				p.x += p.vx;
+				p.y += p.vy;
+
+				// Fade in
+				if (p.opacity < 1) {
+					p.opacity += 0.02;
+				}
+
+				// Wall wrapping logic
+				if (p.x < -p.size) p.x = width + p.size;
+				if (p.x > width + p.size) p.x = -p.size;
+				if (p.y < -p.size) p.y = height + p.size;
+				if (p.y > height + p.size) p.y = -p.size;
+			}
+
+			// This is the crucial line to trigger Svelte's reactivity
+			particles = particles;
+			animationFrameId = requestAnimationFrame(animate);
+		};
+
+		animate();
+
+		return () => {
+			cancelAnimationFrame(animationFrameId);
+		};
+	});
 </script>
 
 <!-- Background Visual Effects Only -->
-<div 
-	class="background-layer absolute inset-0 z-0" 
+<div
+	class="background-layer absolute inset-0 z-0"
 	in:fade={{ duration: 800, easing: quintOut }}
 	role="presentation"
+	bind:this={wrapper}
 >
+	<div class="particles">
+		{#each particles as particle (particle.id)}
+			<div
+				class="particle"
+				style="--size: {particle.size}px; opacity: {particle.opacity}; transform: translate({particle.x}px, {particle.y}px);"
+			></div>
+		{/each}
+	</div>
 	<div class="absolute inset-0 bg-gradient-radial opacity-70"></div>
 
 	<div class="shape-container">
@@ -26,10 +121,7 @@
 		<div class="shape shape-5"></div>
 	</div>
 
-	<div 
-		class="grid-pattern"
-		style="--mouse-x: {mouseX}; --mouse-y: {mouseY};"
-	></div>
+	<div class="grid-pattern" style="--mouse-x: {mouseX}; --mouse-y: {mouseY};"></div>
 </div>
 
 <style>
@@ -39,45 +131,26 @@
 		overflow: hidden;
 	}
 
-	/* Particle Animation */
-	/* .particles {
+	.particles {
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
 		width: 100%;
+		height: 100%;
+		z-index: 1;
 	}
 
 	.particle {
 		position: absolute;
+		top: 0;
+		left: 0;
 		border-radius: 9999px;
 		width: var(--size);
 		height: var(--size);
 		background-color: var(--primary);
-		opacity: 0.8;
-		animation: particles 12s linear infinite;
-		animation-delay: var(--delay);
+		box-shadow: 0 0 8px var(--primary);
 		filter: blur(0.5px);
-		left: var(--x-pos, 50%);
-		box-shadow: 0 0 10px var(--primary);
-	} */
-
-	@keyframes particles {
-		0% {
-			opacity: 0;
-			top: 100%;
-			transform: translateX(0) scale(0.5);
-		}
-		10% {
-			opacity: 0.8;
-		}
-		90% {
-			opacity: 0.6;
-		}
-		100% {
-			opacity: 0;
-			top: -10%;
-			transform: translateX(20px) scale(1.2);
-		}
+		will-change: transform, opacity;
 	}
 
 	/* Grid Pattern */
@@ -86,17 +159,8 @@
 		inset: 0;
 		opacity: calc(0.2 + (var(--mouse-x, 50) / 100) * 0.008);
 		background-size: 30px 30px;
-		background-image:
-			linear-gradient(
-				to right,
-				var(--primary) 1px,
-				transparent 1px
-			),
-			linear-gradient(
-				to bottom,
-				var(--primary) 1px,
-				transparent 1px
-			);
+		background-image: linear-gradient(to right, var(--primary) 1px, transparent 1px),
+			linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
 		mask-image: radial-gradient(
 			ellipse 800px 600px at calc(var(--mouse-x, 50) * 1%) calc(var(--mouse-y, 50) * 1%),
 			black 0%,
@@ -107,9 +171,29 @@
 		);
 		transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 		transform: translate(
-			calc((var(--mouse-x, 50) - 50) * 0.003px), 
+			calc((var(--mouse-x, 50) - 50) * 0.003px),
 			calc((var(--mouse-y, 50) - 50) * 0.003px)
 		);
+	}
+
+	.grid-pattern::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: inherit;
+		background-size: inherit;
+		mask-image: inherit;
+		animation: trace-pulse 4s ease-in-out infinite;
+	}
+
+	@keyframes trace-pulse {
+		0%,
+		100% {
+			opacity: 0;
+		}
+		50% {
+			opacity: 0.15;
+		}
 	}
 
 	/* Shape Styles */
@@ -126,9 +210,7 @@
 		background-color: var(--primary);
 		filter: blur(20px);
 		animation: move 30s linear infinite;
-		box-shadow: 
-			0 0 50px var(--primary),
-			inset 0 0 50px var(--primary);
+		box-shadow: 0 0 50px var(--primary), inset 0 0 50px var(--primary);
 	}
 
 	.shape-1 {
@@ -239,11 +321,7 @@
 
 	/* Background Gradient */
 	.bg-gradient-radial {
-		background: radial-gradient(
-			circle at 50% 50%,
-			var(--primary) 0%,
-			transparent 80%
-		);
+		background: radial-gradient(circle at 50% 50%, var(--primary) 0%, transparent 80%);
 		opacity: 0.03;
 		animation: pulse-glow 8s ease-in-out infinite alternate;
 	}
@@ -276,6 +354,20 @@
 		opacity: calc(0.5 + (var(--mouse-x, 50) / 100) * 0.01);
 	}
 
+	:global(.dark) .grid-pattern::after {
+		animation-name: trace-pulse-dark;
+	}
+
+	@keyframes trace-pulse-dark {
+		0%,
+		100% {
+			opacity: 0;
+		}
+		50% {
+			opacity: 0.25;
+		}
+	}
+
 	:global(.dark) .bg-gradient-radial {
 		animation-name: pulse-glow-dark;
 	}
@@ -290,5 +382,10 @@
 			opacity: 0.15;
 			transform: scale(1.3);
 		}
+	}
+
+	:global(.dark) .particle {
+		box-shadow: 0 0 10px var(--primary);
+		filter: blur(0.8px);
 	}
 </style>
