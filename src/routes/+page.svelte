@@ -4,6 +4,8 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import AnimatedGradient from '$lib/components/custom/AnimatedGradient.svelte';
 	import RippleNavigate from '$lib/components/custom/RippleNavigate.svelte';
+	import LoremPicsum from '$lib/components/custom/LoremPicsum.svelte';
+	import HolographicCard from '$lib/components/custom/holographic-card/HolographicCard.svelte';
 	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 	import DarkModeToggle from '$lib/components/custom/DarkModeToggle.svelte';
 
@@ -17,6 +19,7 @@
 	import MailIcon from '@lucide/svelte/icons/mail';
 	import GithubIcon from '@lucide/svelte/icons/github';
 	import LinkedinIcon from '@lucide/svelte/icons/linkedin';
+	import { RenderScan } from 'svelte-render-scan';
 
 	let mouseX = $state(50);
 	let mouseY = $state(50);
@@ -34,6 +37,9 @@
 <div class="absolute top-20 left-4 z-50 flex justify-start p-4">
 	<DarkModeToggle />
 </div>
+
+<RenderScan />
+
 <div
 	class="home-page relative min-h-screen overflow-hidden"
 	bind:this={contentWrapper}
@@ -70,10 +76,8 @@
 		<!-- Hero Section -->
 		<section class="px-6 py-20 text-center lg:px-10">
 			<div class="mx-auto max-w-4xl">
-				<Badge variant="secondary" class="mb-6">
-					Software Engineer & DevOps Enthusiast
-				</Badge>
-				<h1 class="mb-6 text-4xl font-bold leading-tight lg:text-6xl">
+				<Badge variant="secondary" class="mb-6">Software Engineer & DevOps Enthusiast</Badge>
+				<h1 class="mb-6 text-4xl leading-tight font-bold lg:text-6xl">
 					Hi, I'm Jens van Zutphen
 					<br />
 					<span class="text-primary">I build applications for the web.</span>
@@ -178,74 +182,92 @@
 				<div class="mb-16 text-center">
 					<Badge variant="outline" class="mb-4">My Work</Badge>
 					<h2 class="mb-4 text-3xl font-bold lg:text-4xl">Featured Projects</h2>
-					<p class="text-muted-foreground text-lg">
-						Here are some of the projects I'm proud of.
-					</p>
+					<p class="text-muted-foreground text-lg">Here are some of the projects I'm proud of.</p>
 				</div>
 
 				<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
 					<!-- Project 1 -->
-					<Card.Root class="bg-card/80 overflow-hidden backdrop-blur-sm transition-shadow hover:shadow-lg">
-						<img
-							src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=2070&auto=format&fit=crop"
-							alt="Project 1"
-							class="h-48 w-full object-cover"
-						/>
-						<Card.Header>
-							<Card.Title>Project One</Card.Title>
-							<Card.Description>
-								A brief description of the project, its purpose, and the technologies used.
-							</Card.Description>
-						</Card.Header>
-						<Card.Content class="flex gap-2">
-							<Button variant="outline" href="#">
-								<GithubIcon class="mr-2 size-4" /> Code</Button
-							>
-							<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
-						</Card.Content>
-					</Card.Root>
+					<HolographicCard class="h-full" intensity={0.7}>
+						<Card.Root class="h-full overflow-hidden border-0 bg-transparent">
+							<LoremPicsum
+								width={400}
+								height={192}
+								id={1}
+								alt="Project 1"
+								class="h-48 w-full object-cover"
+							/>
+							<Card.Header>
+								<Card.Title>Project One</Card.Title>
+								<Card.Description>
+									A brief description of the project, its purpose, and the technologies used.
+								</Card.Description>
+							</Card.Header>
+							<Card.Content class="flex gap-2">
+								<Button variant="outline" href="#">
+									<GithubIcon class="mr-2 size-4" /> Code</Button
+								>
+								<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
+							</Card.Content>
+						</Card.Root>
+					</HolographicCard>
 
 					<!-- Project 2 -->
-					<Card.Root class="bg-card/80 overflow-hidden backdrop-blur-sm transition-shadow hover:shadow-lg">
-						<img
-							src="https://images.unsplash.com/photo-1517694712202-1428bc38aa5a?q=80&w=2070&auto=format&fit=crop"
-							alt="Project 2"
-							class="h-48 w-full object-cover"
-						/>
-						<Card.Header>
-							<Card.Title>Project Two</Card.Title>
-							<Card.Description>
-								A brief description of the project, its purpose, and the technologies used.
-							</Card.Description>
-						</Card.Header>
-						<Card.Content class="flex gap-2">
-							<Button variant="outline" href="#">
-								<GithubIcon class="mr-2 size-4" /> Code</Button
-							>
-							<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
-						</Card.Content>
-					</Card.Root>
+					<HolographicCard
+						class="h-full"
+						intensity={0.7}
+						palette={['#4A90E2', '#8E24AA', '#00E676']}
+					>
+						<Card.Root class="h-full overflow-hidden border-0 bg-transparent">
+							<LoremPicsum
+								width={400}
+								height={192}
+								id={2}
+								alt="Project 2"
+								class="h-48 w-full object-cover"
+							/>
+							<Card.Header>
+								<Card.Title>Project Two</Card.Title>
+								<Card.Description>
+									A brief description of the project, its purpose, and the technologies used.
+								</Card.Description>
+							</Card.Header>
+							<Card.Content class="flex gap-2">
+								<Button variant="outline" href="#">
+									<GithubIcon class="mr-2 size-4" /> Code</Button
+								>
+								<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
+							</Card.Content>
+						</Card.Root>
+					</HolographicCard>
 
 					<!-- Project 3 -->
-					<Card.Root class="bg-card/80 overflow-hidden backdrop-blur-sm transition-shadow hover:shadow-lg">
-						<img
-							src="https://images.unsplash.com/photo-1534972195531-271f69fd5114?q=80&w=2070&auto=format&fit=crop"
-							alt="Project 3"
-							class="h-48 w-full object-cover"
-						/>
-						<Card.Header>
-							<Card.Title>Project Three</Card.Title>
-							<Card.Description>
-								A brief description of the project, its purpose, and the technologies used.
-							</Card.Description>
-						</Card.Header>
-						<Card.Content class="flex gap-2">
-							<Button variant="outline" href="#">
-								<GithubIcon class="mr-2 size-4" /> Code</Button
-							>
-							<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
-						</Card.Content>
-					</Card.Root>
+					<HolographicCard
+						class="h-full"
+						intensity={0.7}
+						palette={['#FF38A8', '#FFD700', '#4A90E2']}
+					>
+						<Card.Root class="h-full overflow-hidden border-0 bg-transparent">
+							<LoremPicsum
+								width={400}
+								height={192}
+								id={3}
+								alt="Project 3"
+								class="h-48 w-full object-cover"
+							/>
+							<Card.Header>
+								<Card.Title>Project Three</Card.Title>
+								<Card.Description>
+									A brief description of the project, its purpose, and the technologies used.
+								</Card.Description>
+							</Card.Header>
+							<Card.Content class="flex gap-2">
+								<Button variant="outline" href="#">
+									<GithubIcon class="mr-2 size-4" /> Code</Button
+								>
+								<Button href="#">Live Demo <ArrowRightIcon class="ml-2 size-4" /></Button>
+							</Card.Content>
+						</Card.Root>
+					</HolographicCard>
 				</div>
 			</div>
 		</section>
@@ -290,7 +312,9 @@
 							<LinkedinIcon class="size-6" />
 						</a>
 					</div>
-					<p class="text-muted-foreground text-sm">© 2024 Jens van Zutphen. All Rights Reserved.</p>
+					<p class="text-muted-foreground text-sm">
+						© 2025 Jens van Zutphen. All Rights Reserved.
+					</p>
 				</div>
 			</div>
 		</footer>

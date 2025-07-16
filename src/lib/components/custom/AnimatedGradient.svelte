@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { untrack } from 'svelte';
 
 	type Particle = {
 		id: string;
@@ -16,12 +17,17 @@
 	let mounted = $state(false);
 	let wrapper: HTMLElement;
 	let particles: Particle[] = $state([]);
+	let particleElements: HTMLElement[] = [];
+	let animationFrameId: number;
 
 	const numParticles = 20;
 	const repulsionRadius = 60;
 	const maxRepulsionForce = 1.5;
 	const baseSpeed = 0.3;
 	const friction = 0.97;
+
+	// Non-reactive particle data - this won't trigger effects
+	let particleData: Particle[] = [];
 
 	$effect(() => {
 		mounted = true;
@@ -30,7 +36,19 @@
 	$effect(() => {
 		if (!mounted || !wrapper) return;
 
+		// Initialize particles for rendering (reactive)
 		particles = Array.from({ length: numParticles }, (_, i) => ({
+			id: `p-${i}`,
+			x: 0,
+			y: 0,
+			vx: 0,
+			vy: 0,
+			size: Math.random() * 2.5 + 1,
+			opacity: 0
+		}));
+
+		// Initialize particle data (non-reactive)
+		particleData = Array.from({ length: numParticles }, (_, i) => ({
 			id: `p-${i}`,
 			x: Math.random() * wrapper.clientWidth,
 			y: Math.random() * wrapper.clientHeight,
@@ -40,19 +58,35 @@
 			opacity: 0
 		}));
 
-		let animationFrameId: number;
+		// Get DOM element references after particles are rendered
+		setTimeout(() => {
+			particleElements = Array.from(wrapper.querySelectorAll('.particle'));
+			startAnimation();
+		}, 0);
 
+		return () => {
+			if (animationFrameId) {
+				cancelAnimationFrame(animationFrameId);
+			}
+		};
+	});
+
+	function startAnimation() {
 		const animate = () => {
 			const width = wrapper.clientWidth;
 			const height = wrapper.clientHeight;
-			const mousePx = {
+			// Use untrack to access mouse coordinates without creating effect dependencies
+			const mousePx = untrack(() => ({
 				x: (mouseX / 100) * width,
 				y: (mouseY / 100) * height
-			};
+			}));
 
-			for (const p of particles) {
+			for (let i = 0; i < particleData.length; i++) {
+				const p = particleData[i];
+				const element = particleElements[i];
+
 				// Mouse repulsion
-				if (mouseX > -1) {
+				if (untrack(() => mouseX) > -1) {
 					const dx = p.x - mousePx.x;
 					const dy = p.y - mousePx.y;
 					const distance = Math.sqrt(dx * dx + dy * dy);
@@ -81,19 +115,20 @@
 				if (p.x > width + p.size) p.x = -p.size;
 				if (p.y < -p.size) p.y = height + p.size;
 				if (p.y > height + p.size) p.y = -p.size;
+
+				// Direct DOM manipulation instead of reactive assignment
+				if (element) {
+					element.style.transform = `translate(${p.x}px, ${p.y}px)`;
+					element.style.opacity = p.opacity.toString();
+					element.style.willChange = 'transform, opacity';
+				}
 			}
 
-			// This is the crucial line to trigger Svelte's reactivity
-			particles = particles;
 			animationFrameId = requestAnimationFrame(animate);
 		};
 
 		animate();
-
-		return () => {
-			cancelAnimationFrame(animationFrameId);
-		};
-	});
+	}
 </script>
 
 <!-- Background Visual Effects Only -->
@@ -105,13 +140,10 @@
 >
 	<div class="particles">
 		{#each particles as particle (particle.id)}
-			<div
-				class="particle"
-				style="--size: {particle.size}px; opacity: {particle.opacity}; transform: translate({particle.x}px, {particle.y}px);"
-			></div>
+			<div class="particle" style="--size: {particle.size}px;"></div>
 		{/each}
 	</div>
-	<div class="absolute inset-0 bg-gradient-radial opacity-70"></div>
+	<div class="bg-gradient-radial absolute inset-0 opacity-70"></div>
 
 	<div class="shape-container">
 		<div class="shape shape-1"></div>
@@ -159,7 +191,8 @@
 		inset: 0;
 		opacity: calc(0.2 + (var(--mouse-x, 50) / 100) * 0.008);
 		background-size: 30px 30px;
-		background-image: linear-gradient(to right, var(--primary) 1px, transparent 1px),
+		background-image:
+			linear-gradient(to right, var(--primary) 1px, transparent 1px),
 			linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
 		mask-image: radial-gradient(
 			ellipse 800px 600px at calc(var(--mouse-x, 50) * 1%) calc(var(--mouse-y, 50) * 1%),
@@ -210,7 +243,9 @@
 		background-color: var(--primary);
 		filter: blur(20px);
 		animation: move 30s linear infinite;
-		box-shadow: 0 0 50px var(--primary), inset 0 0 50px var(--primary);
+		box-shadow:
+			0 0 50px var(--primary),
+			inset 0 0 50px var(--primary);
 	}
 
 	.shape-1 {
